@@ -1,0 +1,939 @@
+<title>ETR Visor de Obra</title>
+<meta name="description" content="Visor móvil de ETR APUS PRO: datos generales, presupuesto, análisis de precios y cronograma." />
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2B6E5C">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ETR Visor">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#F3F1EC;
+    --surface:#FFFFFF;
+    --surface-2:#EDEAE2;
+    --ink:#1C2521;
+    --ink-dim:#5B6B63;
+    --line:#DEDACD;
+    --brand:#2B6E5C;
+    --brand-ink:#F4FBF7;
+    --amber:#D97C2B;
+    --amber-ink:#3A2205;
+    --danger:#B3432E;
+    --ok:#2B6E5C;
+    --chip-bg:#E4EEE9;
+    --shadow: 0 1px 2px rgba(28,37,33,.06), 0 6px 20px -8px rgba(28,37,33,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12211C;
+      --surface:#17281F;
+      --surface-2:#1D3126;
+      --ink:#EAF2EC;
+      --ink-dim:#9FB8AB;
+      --line:#28402F;
+      --brand:#59C6A0;
+      --brand-ink:#092F23;
+      --amber:#F0A15D;
+      --amber-ink:#2C1600;
+      --danger:#F0876F;
+      --ok:#59C6A0;
+      --chip-bg:#1F3A2C;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12211C; --surface:#17281F; --surface-2:#1D3126; --ink:#EAF2EC; --ink-dim:#9FB8AB;
+    --line:#28402F; --brand:#59C6A0; --brand-ink:#092F23; --amber:#F0A15D; --amber-ink:#2C1600;
+    --danger:#F0876F; --ok:#59C6A0; --chip-bg:#1F3A2C; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -10px rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    background:var(--bg); color:var(--ink); margin:0; padding:0 16px;
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    height:100%;
+  }
+  html{height:100%;}
+  .app{max-width:460px; margin:0 auto; min-height:100%; display:flex; flex-direction:column;}
+
+  .badge-demo{
+    display:flex; align-items:center; gap:6px; justify-content:center;
+    font-size:11px; font-weight:600; color:var(--ink-dim); letter-spacing:.04em; text-transform:uppercase;
+    padding:8px 0 2px;
+  }
+  .badge-demo svg{width:12px; height:12px; flex:none;}
+
+  header.top{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:5;
+    background:var(--bg);
+    padding-top:6px; padding-bottom:10px;
+    display:flex; align-items:center; gap:10px;
+  }
+  header.top .back{
+    width:36px; height:36px; border-radius:11px; border:1px solid var(--line);
+    background:var(--surface); display:flex; align-items:center; justify-content:center;
+    flex:none; color:var(--ink); cursor:pointer;
+  }
+  header.top .back svg{width:18px; height:18px;}
+  header.top .titles{min-width:0; flex:1;}
+  header.top h1{font-family:'Manrope',sans-serif; font-weight:800; font-size:18px; margin:0; line-height:1.15;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  header.top .sub{font-size:12px; color:var(--ink-dim); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  .brandmark{display:flex; align-items:center; gap:8px; padding:10px 0 6px;}
+  .brandmark .mark{
+    width:34px; height:34px; border-radius:10px; background:var(--brand); color:var(--brand-ink);
+    display:flex; align-items:center; justify-content:center; font-family:'Manrope'; font-weight:800; font-size:15px;
+    flex:none;
+  }
+  .brandmark .name{font-family:'Manrope'; font-weight:800; font-size:17px;}
+  .brandmark .tag{font-size:11px; color:var(--ink-dim);}
+
+  main{flex:1; padding-bottom:28px;}
+
+  .search{
+    display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:10px 12px; margin:4px 0 14px;
+  }
+  .search svg{width:16px; height:16px; color:var(--ink-dim); flex:none;}
+  .search input{
+    border:none; outline:none; background:transparent; color:var(--ink); font-size:14px; width:100%;
+    font-family:'IBM Plex Sans';
+  }
+  .search input::placeholder{color:var(--ink-dim);}
+
+  .section-label{font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-dim); margin:18px 2px 8px;}
+  .section-label:first-child{margin-top:0;}
+
+  .card-list{display:flex; flex-direction:column; gap:10px;}
+
+  .proj-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 14px;
+    box-shadow:var(--shadow); cursor:pointer; display:flex; flex-direction:column; gap:8px;
+  }
+  .proj-card .row1{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .proj-card .cod{font-family:'IBM Plex Mono'; font-size:11px; color:var(--brand); font-weight:600; letter-spacing:.03em;}
+  .proj-card h3{font-family:'Manrope'; font-size:15.5px; font-weight:700; margin:2px 0 0; line-height:1.25;}
+  .proj-card .cli{font-size:12.5px; color:var(--ink-dim); margin-top:2px;}
+  .proj-card .row2{display:flex; justify-content:space-between; align-items:center; margin-top:2px;}
+  .proj-card .total{font-family:'IBM Plex Mono'; font-weight:600; font-size:15px; font-variant-numeric:tabular-nums;}
+  .proj-card .pct-pill{
+    font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--chip-bg); color:var(--brand);
+    font-variant-numeric:tabular-nums;
+  }
+  .proj-card .bar-track{height:5px; border-radius:99px; background:var(--surface-2); overflow:hidden;}
+  .proj-card .bar-fill{height:100%; background:var(--brand); border-radius:99px;}
+
+  .tabs{display:flex; gap:6px; background:var(--surface-2); padding:4px; border-radius:13px; margin-bottom:14px;}
+  .tabs button{
+    flex:1; border:none; background:transparent; padding:9px 6px; border-radius:10px; font-size:12.5px;
+    font-weight:700; color:var(--ink-dim); font-family:'Manrope'; cursor:pointer;
+  }
+  .tabs button.active{background:var(--surface); color:var(--ink); box-shadow:var(--shadow);}
+
+  .chiprow{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 12px; margin:0 -2px;}
+  .chiprow::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:none; padding:8px 14px; border-radius:999px; background:var(--surface); border:1px solid var(--line);
+    font-size:12.5px; font-weight:600; color:var(--ink-dim); cursor:pointer; white-space:nowrap;
+  }
+  .chip.active{background:var(--brand); color:var(--brand-ink); border-color:var(--brand);}
+
+  .rubro-row{
+    display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:12px 12px; cursor:pointer;
+  }
+  .rubro-row .num{
+    width:30px; height:30px; border-radius:9px; background:var(--chip-bg); color:var(--brand); flex:none;
+    display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono'; font-weight:600; font-size:12px;
+  }
+  .rubro-row .mid{flex:1; min-width:0;}
+  .rubro-row .desc{font-size:13.5px; font-weight:600; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .rubro-row .meta{font-size:11.5px; color:var(--ink-dim); margin-top:2px; font-variant-numeric:tabular-nums;}
+  .rubro-row .end{text-align:right; flex:none;}
+  .rubro-row .total{font-family:'IBM Plex Mono'; font-weight:600; font-size:13.5px; font-variant-numeric:tabular-nums;}
+  .rubro-row .chev{color:var(--ink-dim); margin-left:2px;}
+  .rubro-row-inner{display:flex; align-items:center; width:100%; gap:10px;}
+
+  .apu-head{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow);}
+  .apu-head .cod{font-family:'IBM Plex Mono'; color:var(--brand); font-size:12px; font-weight:700;}
+  .apu-head h2{font-family:'Manrope'; font-size:17px; margin:4px 0 10px; line-height:1.3;}
+  .apu-head .stats{display:flex; gap:18px;}
+  .apu-head .stat .k{font-size:10.5px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.05em;}
+  .apu-head .stat .v{font-family:'IBM Plex Mono'; font-weight:600; font-size:15px; margin-top:2px; font-variant-numeric:tabular-nums;}
+
+  .grp{margin-bottom:18px;}
+  .grp .grp-title{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+  .grp .dot{width:8px; height:8px; border-radius:50%;}
+  .grp .grp-name{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-dim);}
+  .grp .grp-sub{margin-left:auto; font-family:'IBM Plex Mono'; font-size:12.5px; font-weight:600; font-variant-numeric:tabular-nums;}
+
+  table.datos{border-collapse:collapse; width:100%; font-size:12px;}
+  table.datos th, table.datos td{padding:8px 9px; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  table.datos thead th{font-size:9.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-dim); font-weight:700; border-bottom:1px solid var(--line);}
+  table.datos thead th:first-child, table.datos td:first-child{text-align:left;}
+  table.datos td:first-child{white-space:normal; max-width:150px;}
+  table.datos tbody tr:not(:last-child) td{border-bottom:1px solid var(--line);}
+  table.datos td.num{font-family:'IBM Plex Mono';}
+  table.datos td.unid{color:var(--ink-dim); font-size:11px;}
+  table.datos td.sub{font-weight:700;}
+  table.datos tfoot td{border-top:1px dashed var(--line); font-weight:700; font-family:'IBM Plex Mono'; padding-top:9px;}
+  table.datos tfoot td:first-child{font-family:'Manrope'; color:var(--ink); font-weight:700; font-size:12px;}
+  .grp .table-wrap{margin-bottom:0; box-shadow:none;}
+  .rubro-row .jump{
+    flex:none; width:32px; height:32px; border-radius:9px; background:var(--chip-bg); color:var(--brand);
+    display:flex; align-items:center; justify-content:center; border:none; cursor:pointer;
+  }
+  .rubro-row .jump svg{width:16px; height:16px;}
+  tr.row-hl td{background:color-mix(in srgb, var(--brand) 16%, transparent) !important;}
+  tr.row-hl td:first-child{box-shadow:inset 3px 0 0 var(--brand);}
+
+  .resumen{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 16px; display:flex; flex-direction:column; gap:8px;}
+  .resumen .ln{display:flex; justify-content:space-between; font-size:13px;}
+  .resumen .ln .l{color:var(--ink-dim);}
+  .resumen .ln .r{font-family:'IBM Plex Mono'; font-variant-numeric:tabular-nums; font-weight:500;}
+  .resumen .ln.total{border-top:1px dashed var(--line); padding-top:10px; margin-top:2px;}
+  .resumen .ln.total .l{font-weight:700; color:var(--ink);}
+  .resumen .ln.total .r{font-weight:700; font-size:15px; color:var(--brand);}
+
+  .datos-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:var(--shadow);}
+  .datos-card .dc-title{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--brand); margin-bottom:10px;}
+  .datos-card .dl{display:flex; flex-direction:column; gap:11px;}
+  .datos-card .dl .d{display:flex; flex-direction:column; gap:2px;}
+  .datos-card .dl .k{font-size:10.5px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.04em;}
+  .datos-card .dl .v{font-size:13.5px; font-weight:500; line-height:1.4;}
+  .datos-card .dl .v.money{font-family:'IBM Plex Mono'; font-weight:600; color:var(--brand); font-variant-numeric:tabular-nums;}
+  .datos-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 12px;}
+
+  .table-wrap{overflow-x:auto; background:var(--surface); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); margin-bottom:16px;}
+  table.crono{border-collapse:collapse; width:100%; font-size:12px;}
+  table.crono th, table.crono td{padding:9px 10px; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  table.crono thead th{
+    font-family:'Manrope'; font-size:10px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-dim);
+    border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--surface);
+  }
+  table.crono thead th:first-child, table.crono td:first-child{ text-align:left; position:sticky; left:0; background:var(--surface); }
+  table.crono tbody tr:not(:last-child) td{border-bottom:1px solid var(--line);}
+  table.crono td:first-child{font-weight:600; max-width:150px; overflow:hidden; text-overflow:ellipsis;}
+  table.crono td.pct{font-family:'IBM Plex Mono';}
+  table.crono td.pct.z{color:var(--ink-dim); opacity:.35;}
+  table.crono tfoot td{border-top:1px dashed var(--line); font-weight:700; font-family:'IBM Plex Mono'; color:var(--brand); padding-top:10px;}
+  table.crono tfoot td:first-child{font-family:'Manrope'; color:var(--ink); font-weight:700;}
+
+  .period-summary{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow);}
+  .period-summary .ps-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .period-summary h3{font-family:'Manrope'; font-size:14.5px; margin:0;}
+  .period-summary .ps-money{font-family:'IBM Plex Mono'; font-weight:700; color:var(--brand); font-size:15px; font-variant-numeric:tabular-nums;}
+  .res-row{display:grid; grid-template-columns:1fr auto auto; gap:10px; padding:9px 2px; border-bottom:1px solid var(--line); font-size:12.5px; align-items:center;}
+  .res-row:last-child{border-bottom:none;}
+  .res-row .nm{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .res-row .qty{font-family:'IBM Plex Mono'; text-align:right; color:var(--ink-dim); font-variant-numeric:tabular-nums; font-size:12px;}
+  .res-row .qty .u{font-size:10px; margin-left:2px;}
+  .res-row .money{font-family:'IBM Plex Mono'; text-align:right; font-weight:600; font-variant-numeric:tabular-nums;}
+
+  .empty-hint{font-size:12px; color:var(--ink-dim); text-align:center; padding:30px 20px;}
+
+  [hidden]{display:none !important;}
+</style>
+
+<div class="app">
+  <div class="badge-demo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+    Prototipo &middot; datos de ejemplo
+  </div>
+
+  <header class="top" id="topbar">
+    <button class="back" id="btnBack" hidden aria-label="Volver">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="titles" id="topTitles">
+      <div class="brandmark" id="brandmark">
+        <div class="mark"><img src="icon-192.png" alt="" style="width:100%;height:100%;object-fit:contain;"/></div>
+        <div>
+          <div class="name">ETR Visor</div>
+          <div class="tag">Tus proyectos, en el bolsillo</div>
+        </div>
+      </div>
+      <h1 id="pageTitle" hidden></h1>
+      <div class="sub" id="pageSub" hidden></div>
+    </div>
+  </header>
+
+  <main id="main"></main>
+</div>
+
+<script>
+const DATA = {
+  proyectos: [
+    { cod:"PROY-0000000012", nombre:"Regeneración Urbana Calle Bolívar", cliente:"GAD Municipal de Machala", total:284530.17, avance:62,
+      datos:{
+        institucion:"GAD Municipal de Machala",
+        proyecto:"Regeneración urbana de la Calle Bolívar, tramo Av. Las Palmeras — Parque Central",
+        ubicacion:"Machala, El Oro",
+        oferente:"CONSTRUCTORA ANDINA CIA. LTDA.",
+        firma:"Ing. Carlos Andrade Vera",
+        cargo:"REPRESENTANTE LEGAL",
+        ciudad:"Machala",
+        fecha:"02/03/2026",
+        plazo:"180 DIAS",
+        registroProfesional:"SENESCYT-0912345678",
+        nota:"ESTOS PRECIOS NO INCLUYEN IVA.",
+        pctIndirectos:18,
+        pctUtilidad:0,
+      },
+      rubros: [
+        {item:"1", cod:"501-01", desc:"Trazado y replanteo con equipo topográfico", unidad:"m", cant:1250, pu:0.62, crono:[40,60,0,0,0,0],
+          apu:{
+            grupos:[
+              {nombre:"Materiales", subtotal:0.1059, items:[
+                {nm:"Estaca de madera 2x2 cm", unid:"u", cant:0.15, precio:0.35, rend:1, subtotal:0.0525},
+                {nm:"Piola de nylon", unid:"m", cant:0.5, precio:0.05, rend:1, subtotal:0.025},
+                {nm:"Pintura esmalte para marcas", unid:"gl", cant:0.002, precio:14.2, rend:1, subtotal:0.0284},
+              ]},
+              {nombre:"Mano de Obra", subtotal:0.3622, items:[
+                {nm:"Topógrafo 2", unid:"hora", cant:0.02, precio:4.83, rend:1, subtotal:0.0966},
+                {nm:"Cadenero", unid:"hora", cant:0.04, precio:3.35, rend:1, subtotal:0.134},
+                {nm:"Peón", unid:"hora", cant:0.04, precio:3.29, rend:1, subtotal:0.1316},
+              ]},
+              {nombre:"Equipo", subtotal:0.1181, items:[
+                {nm:"Estación total", unid:"hora", cant:0.02, precio:5.0, rend:1, subtotal:0.1},
+                {nm:"Herramienta menor (5% MO)", unid:"%", cant:5, precio:0, rend:1, subtotal:0.0181},
+              ]},
+            ],
+            costoDirecto:0.5862, costoIndirecto:0.1055, precioOferta:0.6917,
+          }},
+        {item:"2", cod:"502-04", desc:"Excavación a máquina sin clasificar", unidad:"m3", cant:980, pu:3.08, crono:[30,50,20,0,0,0]},
+        {item:"3", cod:"503-11", desc:"Desalojo de material sin clasificar DMT=5km", unidad:"m3", cant:980, pu:3.78, crono:[30,50,20,0,0,0]},
+        {item:"4", cod:"504-02", desc:"Sub-base clase II, e=20cm compactada", unidad:"m3", cant:410, pu:17.20, crono:[0,30,50,20,0,0]},
+        {item:"5", cod:"504-06", desc:"Base granular clase I, e=15cm compactada", unidad:"m3", cant:340, pu:20.04, crono:[0,20,40,40,0,0]},
+        {item:"6", cod:"601-14", desc:"Bordillo con cuneta de hormigón simple f'c=210", unidad:"m", cant:820, pu:30.08, crono:[0,0,20,40,40,0]},
+        {item:"7", cod:"602-02", desc:"Adoquín de hormigón e=8cm sobre cama de arena", unidad:"m2", cant:1450, pu:22.65, crono:[0,0,10,30,40,20]},
+        {item:"8", cod:"701-05", desc:"Suministro e instalación de tubería PVC 200mm", unidad:"m", cant:610, pu:14.90, crono:[0,20,50,30,0,0]},
+        {item:"9", cod:"801-01", desc:"Pozo de revisión H.S. f'c=210, prof. 1.5m", unidad:"u", cant:14, pu:186.40, crono:[0,10,30,40,20,0]},
+        {item:"10", cod:"901-03", desc:"Señalización horizontal con pintura de tráfico", unidad:"m2", cant:96, pu:8.75, crono:[0,0,0,0,30,70]},
+      ],
+      cronoPeriodos:["MES 1","MES 2","MES 3","MES 4","MES 5","MES 6"],
+      recursos:{
+        Materiales:[
+          {nm:"Cemento Portland tipo I", unid:"saco", precio:7.5, cantPeriodo:[150,400,650,700,500,270]},
+          {nm:"Adoquín de hormigón e=8cm", unid:"m2", precio:12.8, cantPeriodo:[0,145,435,507,290,73]},
+          {nm:"Tubería PVC 200mm", unid:"m", precio:9.4, cantPeriodo:[0,30,120,270,180,10]},
+          {nm:"Ripio triturado", unid:"m3", precio:18.0, cantPeriodo:[75,150,190,190,110,35]},
+        ],
+        "Mano de Obra":[
+          {nm:"Maestro mayor", unid:"hora", precio:4.5, cantPeriodo:[80,130,160,175,145,110]},
+          {nm:"Albañil", unid:"hora", precio:3.6, cantPeriodo:[60,180,260,260,160,80]},
+          {nm:"Peón", unid:"hora", precio:3.3, cantPeriodo:[100,200,300,320,220,100]},
+          {nm:"Topógrafo 2", unid:"hora", precio:4.83, cantPeriodo:[75,62,50,37,17,7]},
+        ],
+        Equipo:[
+          {nm:"Retroexcavadora", unid:"hora", precio:25, cantPeriodo:[40,60,50,30,14,6]},
+          {nm:"Compactadora vibratoria", unid:"hora", precio:12, cantPeriodo:[10,40,60,50,30,10]},
+          {nm:"Volqueta 8m3", unid:"hora", precio:18, cantPeriodo:[30,50,50,40,20,10]},
+        ],
+      },
+    },
+    { cod:"PROY-0000000009", nombre:"Alcantarillado Sanitario Sector Norte", cliente:"Consorcio Vías del Pacífico", total:96410.55, avance:34,
+      datos:{
+        institucion:"Consorcio Vías del Pacífico",
+        proyecto:"Construcción de alcantarillado sanitario, Sector Norte",
+        ubicacion:"Sector Norte, cantón vecino",
+        oferente:"ETR INGENIERÍA Y CONSTRUCCIONES S.A.",
+        firma:"Ing. Marco Salinas Reyes",
+        cargo:"OFERENTE",
+        ciudad:"Machala",
+        fecha:"15/01/2026",
+        plazo:"90 DIAS",
+        registroProfesional:"",
+        nota:"ESTOS PRECIOS NO INCLUYEN IVA.",
+        pctIndirectos:20,
+        pctUtilidad:0,
+      },
+      rubros: [
+        {item:"1", cod:"101-02", desc:"Limpieza y desbroce manual", unidad:"m2", cant:2200, pu:1.05, crono:[70,30,0,0]},
+        {item:"2", cod:"301-07", desc:"Excavación de zanja a máquina, prof. 1-2m", unidad:"m3", cant:640, pu:4.35, crono:[30,50,20,0]},
+        {item:"3", cod:"701-09", desc:"Tubería PVC alcantarillado 250mm", unidad:"m", cant:480, pu:21.10, crono:[0,30,50,20]},
+        {item:"4", cod:"801-04", desc:"Pozo de revisión H.S., prof. 2.0m", unidad:"u", cant:9, pu:245.80, crono:[0,20,50,30]},
+        {item:"5", cod:"302-01", desc:"Relleno compactado con material de sitio", unidad:"m3", cant:520, pu:6.15, crono:[0,10,40,50]},
+      ],
+      cronoPeriodos:["QUINC. 1","QUINC. 2","QUINC. 3","QUINC. 4"],
+      recursos:{
+        Materiales:[{nm:"Tubería PVC 250mm", unid:"m", precio:14.6, cantPeriodo:[0,144,240,96]}],
+        "Mano de Obra":[{nm:"Peón", unid:"hora", precio:3.3, cantPeriodo:[90,140,140,90]}],
+        Equipo:[{nm:"Retroexcavadora", unid:"hora", precio:25, cantPeriodo:[22,32,26,10]}],
+      },
+    },
+  ]
+};
+
+const fmt$ = n => "$ " + n.toLocaleString("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtNum = n => n.toLocaleString("es-EC", {minimumFractionDigits:2, maximumFractionDigits:2});
+
+// 💡 Búsqueda por PALABRA COMPLETA: "peón" tiene que encontrar "Peón de albañil" o "Peón 2",
+// pero NO "campeón" ni "campeonato" — la coincidencia no puede estar pegada a otra letra o número
+// (las vocales con tilde y la ñ cuentan como letra, para no cortar la palabra a la mitad).
+function esLetraODigito(c){ return /[a-z0-9áéíóúüñ]/i.test(c); }
+function coincideCompleta(texto, termino){
+  if(!termino) return true;
+  const t = (texto||"").toLowerCase();
+  const q = termino.toLowerCase().trim();
+  if(!q) return true;
+  let desde = 0;
+  while(true){
+    const pos = t.indexOf(q, desde);
+    if(pos === -1) return false;
+    const antes = pos === 0 ? "" : t[pos-1];
+    const despues = (pos+q.length >= t.length) ? "" : t[pos+q.length];
+    if(!esLetraODigito(antes) && !esLetraODigito(despues)) return true;
+    desde = pos + 1;
+  }
+}
+
+let state = { view:"projects", proj:null, rubro:null, projTab:"datos", cronoTab:"Valorado", periodo:0, search:"", highlightItem:null };
+const stack = [];
+
+function go(next){ stack.push(JSON.parse(JSON.stringify(state))); state = {...state, ...next}; render(); }
+function back(){ if(stack.length){ state = stack.pop(); render(); } }
+
+document.getElementById("btnBack").addEventListener("click", back);
+
+function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+
+// ==========================================================================
+// ACTIVACIÓN (candado de la app) — en la app real valida con el mismo
+// esquema que ya usa LicenciaETR.cs en el programa de escritorio. Acá, para
+// el prototipo, un único código de prueba y guardado en el propio celular
+// (localStorage) para no volver a pedirlo cada vez que se abre.
+// ==========================================================================
+const CODIGO_DEMO = "ETR-2026-DEMO";
+function estaActivado(){ try { return localStorage.getItem("etr_activado") === "1"; } catch(e){ return false; } }
+function activar(clave){
+  if((clave||"").trim().toUpperCase() === CODIGO_DEMO){
+    try { localStorage.setItem("etr_activado", "1"); } catch(e){}
+    return true;
+  }
+  return false;
+}
+
+// ==========================================================================
+// PROYECTOS IMPORTADOS — el archivo que genera el programa de escritorio se
+// suma a la lista (nunca reemplaza), guardado en el propio celular.
+// ==========================================================================
+function cargarProyectosGuardados(){
+  try {
+    const extra = JSON.parse(localStorage.getItem("etr_proyectos_importados") || "[]");
+    extra.forEach(p => { if(!DATA.proyectos.some(x=>x.cod===p.cod)) DATA.proyectos.push(p); });
+  } catch(e){}
+}
+function guardarProyectoImportado(p){
+  try {
+    const extra = JSON.parse(localStorage.getItem("etr_proyectos_importados") || "[]");
+    extra.push(p);
+    localStorage.setItem("etr_proyectos_importados", JSON.stringify(extra));
+  } catch(e){}
+}
+const PROYECTO_EJEMPLO_IMPORT = {
+  cod:"PROY-0000000031", nombre:"Cerramiento y Cancha Barrio Las Flores", cliente:"Junta Parroquial Las Flores", total:41280.90, avance:0,
+  datos:{ institucion:"Junta Parroquial Las Flores", proyecto:"Cerramiento perimetral y cancha de uso múltiple", ubicacion:"Barrio Las Flores",
+    oferente:"CONSTRUCTORA ANDINA CIA. LTDA.", firma:"Ing. Carlos Andrade Vera", cargo:"REPRESENTANTE LEGAL", ciudad:"Machala", fecha:"—",
+    plazo:"60 DIAS", registroProfesional:"", nota:"ESTOS PRECIOS NO INCLUYEN IVA.", pctIndirectos:18, pctUtilidad:0 },
+  rubros:[
+    {item:"1", cod:"201-01", desc:"Excavación de plintos a mano", unidad:"m3", cant:24, pu:9.8, crono:[100,0]},
+    {item:"2", cod:"301-05", desc:"Cadena de cimentación H.A. f'c=210", unidad:"m3", cant:12, pu:210.4, crono:[40,60]},
+    {item:"3", cod:"401-02", desc:"Malla de cerramiento galvanizada h=2.4m", unidad:"m", cant:180, pu:24.6, crono:[0,100]},
+  ],
+  cronoPeriodos:["MES 1","MES 2"],
+  recursos:{ Materiales:[{nm:"Malla galvanizada 2.4m", unid:"m", precio:18.0, cantPeriodo:[0,180]}], "Mano de Obra":[{nm:"Peón", unid:"hora", precio:3.3, cantPeriodo:[80,60]}], Equipo:[{nm:"Concretera", unid:"hora", precio:8, cantPeriodo:[10,4]}] },
+};
+
+function renderActivacion(){
+  const wrap = el(`
+    <div style="min-height:65vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; text-align:center; padding:20px 10px;">
+      <div style="width:64px;height:64px;"><img src="icon-192.png" alt="" style="width:100%;height:100%;object-fit:contain;"/></div>
+      <div>
+        <h2 style="font-family:'Manrope'; margin:0 0 4px; font-size:18px;">Activar ETR Visor</h2>
+        <div style="color:var(--ink-dim); font-size:13px; max-width:270px;">Ingresá el código de activación que te dio tu proveedor de ETR APUS PRO.</div>
+      </div>
+      <div class="search" style="width:100%; max-width:260px; margin:0;">
+        <input id="inpClave" placeholder="Código de activación" style="text-align:center; font-family:'IBM Plex Mono'; letter-spacing:.05em;"/>
+      </div>
+      <div id="errClave" style="color:var(--danger); font-size:12px; min-height:14px;"></div>
+      <button id="btnActivar" style="background:var(--brand); color:var(--brand-ink); border:none; padding:12px 30px; border-radius:12px; font-family:'Manrope'; font-weight:700; font-size:14px; cursor:pointer;">Activar</button>
+      <div style="font-size:10.5px; color:var(--ink-dim); max-width:250px;">Prototipo: probá con el código <b style="font-family:'IBM Plex Mono'">${CODIGO_DEMO}</b></div>
+    </div>
+  `);
+  const intentar = ()=>{
+    const v = wrap.querySelector("#inpClave").value;
+    if(activar(v)) render();
+    else wrap.querySelector("#errClave").textContent = "Código inválido. Revisalo e intentá de nuevo.";
+  };
+  wrap.querySelector("#btnActivar").addEventListener("click", intentar);
+  wrap.querySelector("#inpClave").addEventListener("keydown", (e)=>{ if(e.key==="Enter") intentar(); });
+  setTimeout(()=> wrap.querySelector("#inpClave").focus());
+  return wrap;
+}
+
+function render(){
+  const main = document.getElementById("main");
+  main.innerHTML = "";
+  const back = document.getElementById("btnBack");
+  const brandmark = document.getElementById("brandmark");
+  const title = document.getElementById("pageTitle");
+  const sub = document.getElementById("pageSub");
+
+  if(!estaActivado()){
+    back.hidden = true; brandmark.hidden = true; title.hidden = true; sub.hidden = true;
+    main.appendChild(renderActivacion());
+    return;
+  }
+
+  if(state.view === "projects"){
+    back.hidden = true; brandmark.hidden = false; title.hidden = true; sub.hidden = true;
+    main.appendChild(renderProjects());
+  } else if(state.view === "project"){
+    back.hidden = false; brandmark.hidden = true; title.hidden = false; sub.hidden = false;
+    title.textContent = state.proj.nombre;
+    sub.textContent = state.proj.cliente;
+    main.appendChild(renderProject());
+  } else if(state.view === "apu"){
+    back.hidden = false; brandmark.hidden = true; title.hidden = false; sub.hidden = false;
+    title.textContent = "Análisis de precios";
+    sub.textContent = state.proj.nombre;
+    main.appendChild(renderApu());
+  }
+}
+
+function renderProjects(){
+  const wrap = el(`<div></div>`);
+
+  const importRow = el(`
+    <div style="display:flex; gap:8px; margin-bottom:4px;">
+      <label for="fileImport" style="flex:1; display:flex; align-items:center; justify-content:center; gap:7px; background:var(--brand); color:var(--brand-ink); border-radius:12px; padding:11px; font-family:'Manrope'; font-weight:700; font-size:13px; cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        Importar proyecto
+      </label>
+      <input type="file" id="fileImport" accept="application/json,.json,.etrapu" hidden/>
+      <button id="btnEjemplo" title="Sumar un proyecto de ejemplo (para probar que se acumulan)" style="flex:none; width:44px; background:var(--surface); border:1px solid var(--line); border-radius:12px; color:var(--ink-dim); cursor:pointer;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="margin:auto;"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      </button>
+    </div>
+    <div id="importMsg" style="font-size:11.5px; color:var(--ink-dim); text-align:center; min-height:14px; margin-bottom:10px;"></div>
+  `);
+  wrap.appendChild(importRow);
+
+  wrap.appendChild(el(`
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchProj" placeholder="Buscar proyecto o cliente..." value="${state.search}"/>
+    </div>
+  `));
+  wrap.appendChild(el(`<div class="section-label">Tus proyectos</div>`));
+  const list = el(`<div class="card-list"></div>`);
+  const filtrados = DATA.proyectos.filter(p => coincideCompleta(p.nombre, state.search) || coincideCompleta(p.cliente, state.search));
+  if(filtrados.length === 0){
+    list.appendChild(el(`<div class="empty-hint">No hay proyectos que coincidan con "${state.search}".</div>`));
+  }
+  filtrados.forEach(p=>{
+    const card = el(`
+      <div class="proj-card">
+        <div class="row1">
+          <div>
+            <div class="cod">${p.cod}</div>
+            <h3>${p.nombre}</h3>
+            <div class="cli">${p.cliente}</div>
+          </div>
+          <div class="pct-pill">${p.avance}%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${p.avance}%"></div></div>
+        <div class="row2">
+          <div class="total">${fmt$(p.total)}</div>
+        </div>
+      </div>
+    `);
+    card.addEventListener("click", ()=> go({view:"project", proj:p, projTab:"datos", search:""}));
+    list.appendChild(card);
+  });
+  wrap.appendChild(list);
+
+  wrap.querySelector("#searchProj").addEventListener("input", (e)=>{ state.search = e.target.value; render(); document.getElementById("searchProj").focus(); document.getElementById("searchProj").selectionStart = document.getElementById("searchProj").value.length; });
+
+  const msg = wrap.querySelector("#importMsg");
+  function agregarProyecto(p, origen){
+    if(!p || !p.cod || !p.nombre || !Array.isArray(p.rubros)){
+      msg.style.color = "var(--danger)";
+      msg.textContent = "Ese archivo no tiene la forma de un proyecto de ETR APUS PRO.";
+      return;
+    }
+    if(DATA.proyectos.some(x=>x.cod===p.cod)){
+      msg.style.color = "var(--danger)";
+      msg.textContent = `Ya tenías cargado ${p.cod} — no se volvió a sumar.`;
+      return;
+    }
+    DATA.proyectos.push(p);
+    guardarProyectoImportado(p);
+    msg.style.color = "var(--brand)";
+    msg.textContent = `"${p.nombre}" se agregó a tu lista (se guardó en este celular).`;
+    render();
+  }
+  wrap.querySelector("#fileImport").addEventListener("change", (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try { agregarProyecto(JSON.parse(reader.result)); }
+      catch(err){ msg.style.color = "var(--danger)"; msg.textContent = "No se pudo leer ese archivo (¿es el que generó ETR APUS PRO?)."; }
+    };
+    reader.onerror = ()=>{ msg.style.color = "var(--danger)"; msg.textContent = "No se pudo abrir el archivo."; };
+    reader.readAsText(file);
+  });
+  wrap.querySelector("#btnEjemplo").addEventListener("click", ()=> agregarProyecto(JSON.parse(JSON.stringify(PROYECTO_EJEMPLO_IMPORT))));
+
+  return wrap;
+}
+
+function renderProject(){
+  const wrap = el(`<div></div>`);
+  const tabs = el(`
+    <div class="tabs">
+      <button data-t="datos">Datos</button>
+      <button data-t="presupuesto">Presupuesto</button>
+      <button data-t="cronograma">Cronograma</button>
+    </div>
+  `);
+  tabs.querySelectorAll("button").forEach(b=>{
+    if(b.dataset.t === state.projTab) b.classList.add("active");
+    b.addEventListener("click", ()=>{ state.projTab = b.dataset.t; state.search=""; render(); });
+  });
+  wrap.appendChild(tabs);
+
+  if(state.projTab === "datos"){
+    wrap.appendChild(renderDatos());
+  } else if(state.projTab === "presupuesto"){
+    wrap.appendChild(el(`
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="searchRub" placeholder="Buscar rubro o código..." value="${state.search}"/>
+      </div>
+    `));
+    const list = el(`<div class="card-list"></div>`);
+    const rubros = state.proj.rubros.filter(r => coincideCompleta(r.desc, state.search) || coincideCompleta(r.cod, state.search));
+    rubros.forEach(r=>{
+      const row = el(`
+        <div class="rubro-row">
+          <div class="rubro-row-inner">
+            <div class="num">${r.item}</div>
+            <div class="mid">
+              <div class="desc">${r.desc}</div>
+              <div class="meta">${r.cod} &middot; ${fmtNum(r.cant)} ${r.unidad} &times; ${fmt$(r.pu)}</div>
+            </div>
+            <div class="end">
+              <div class="total">${fmt$(r.cant * r.pu)}</div>
+            </div>
+            <button class="jump" title="Ver en el Cronograma">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            </button>
+            <div class="chev">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+        </div>
+      `);
+      row.querySelector(".jump").addEventListener("click", (ev)=>{
+        ev.stopPropagation();
+        go({view:"project", projTab:"cronograma", cronoTab:"Valorado", highlightItem:r.item});
+      });
+      row.addEventListener("click", ()=> go({view:"apu", rubro:r}));
+      list.appendChild(row);
+    });
+    wrap.appendChild(list);
+    setTimeout(()=>{
+      const inp = wrap.querySelector("#searchRub");
+      if(inp){ inp.addEventListener("input", (e)=>{ state.search = e.target.value; render(); const i2=document.getElementById("searchRub"); i2.focus(); i2.selectionStart=i2.value.length; }); }
+    });
+  } else {
+    wrap.appendChild(renderCronograma());
+  }
+  return wrap;
+}
+
+function renderDatos(){
+  const d = state.proj.datos;
+  const p = state.proj;
+  const wrap = el(`<div></div>`);
+  wrap.appendChild(el(`
+    <div class="datos-card">
+      <div class="dc-title">Proyecto</div>
+      <div class="dl">
+        <div class="d"><div class="v">${d.proyecto || p.nombre}</div></div>
+        <div class="d"><div class="k">Institución contratante</div><div class="v">${d.institucion || "—"}</div></div>
+        <div class="d"><div class="k">Ubicación</div><div class="v">${d.ubicacion || "—"}</div></div>
+      </div>
+    </div>
+  `));
+  wrap.appendChild(el(`
+    <div class="datos-card">
+      <div class="dc-title">Oferente</div>
+      <div class="dl">
+        <div class="d"><div class="k">Oferente adjudicado</div><div class="v">${d.oferente || "—"}</div></div>
+        <div class="datos-grid">
+          <div class="d"><div class="k">Firma</div><div class="v">${d.firma || "—"}</div></div>
+          <div class="d"><div class="k">Cargo / Rol</div><div class="v">${d.cargo || "—"}</div></div>
+        </div>
+        ${d.registroProfesional ? `<div class="d"><div class="k">Registro profesional</div><div class="v">${d.registroProfesional}</div></div>` : ``}
+      </div>
+    </div>
+  `));
+  wrap.appendChild(el(`
+    <div class="datos-card">
+      <div class="dc-title">Ejecución</div>
+      <div class="datos-grid">
+        <div class="d"><div class="k">Ciudad</div><div class="v">${d.ciudad || "—"}</div></div>
+        <div class="d"><div class="k">Fecha</div><div class="v">${d.fecha || "—"}</div></div>
+        <div class="d"><div class="k">Plazo</div><div class="v">${d.plazo || "—"}</div></div>
+        <div class="d"><div class="k">Presupuesto referencial</div><div class="v money">${fmt$(p.total)}</div></div>
+      </div>
+    </div>
+  `));
+  wrap.appendChild(el(`
+    <div class="datos-card">
+      <div class="dc-title">Indirectos</div>
+      <div class="datos-grid">
+        <div class="d"><div class="k">% Indirectos (total)</div><div class="v">${(d.pctIndirectos||0).toFixed(2)}%</div></div>
+        <div class="d"><div class="k">% Utilidad (incluida arriba)</div><div class="v">${(d.pctUtilidad||0).toFixed(2)}%</div></div>
+      </div>
+      ${d.nota ? `<div class="dl" style="margin-top:11px;"><div class="d"><div class="k">Nota</div><div class="v">${d.nota}</div></div></div>` : ``}
+    </div>
+  `));
+  return wrap;
+}
+
+function renderCronograma(){
+  const wrap = el(`<div></div>`);
+  const p = state.proj;
+  const tiposDisponibles = ["Valorado", ...Object.keys(p.recursos)];
+  const chips = el(`<div class="chiprow"></div>`);
+  tiposDisponibles.forEach(t=>{
+    const c = el(`<div class="chip">${t}</div>`);
+    if(t === state.cronoTab) c.classList.add("active");
+    c.addEventListener("click", ()=>{ state.cronoTab = t; state.periodo = 0; state.search=""; render(); });
+    chips.appendChild(c);
+  });
+  wrap.appendChild(chips);
+
+  wrap.appendChild(el(`
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="searchCrono" placeholder="Buscar rubro o insumo (palabra completa)..." value="${state.search}"/>
+    </div>
+  `));
+
+  if(state.cronoTab === "Valorado"){
+    wrap.appendChild(renderValoradoTabla());
+    setTimeout(()=>{
+      const inp = wrap.querySelector("#searchCrono");
+      if(inp){ inp.addEventListener("input", (e)=>{ state.search = e.target.value; render(); const i2=document.getElementById("searchCrono"); i2.focus(); i2.selectionStart=i2.value.length; }); }
+    });
+    return wrap;
+  }
+
+  const chipsPeriodo = el(`<div class="chiprow"></div>`);
+  p.cronoPeriodos.forEach((per, i)=>{
+    const c = el(`<div class="chip">${per}</div>`);
+    if(i === state.periodo) c.classList.add("active");
+    c.addEventListener("click", ()=>{ state.periodo = i; render(); });
+    chipsPeriodo.appendChild(c);
+  });
+  wrap.appendChild(chipsPeriodo);
+
+  const items = (p.recursos[state.cronoTab] || []).filter(it => coincideCompleta(it.nm, state.search));
+  const totalPeriodo = items.reduce((s,it)=> s + (it.cantPeriodo[state.periodo]||0)*it.precio, 0);
+
+  wrap.appendChild(el(`
+    <div class="period-summary" style="margin-bottom:12px;">
+      <div class="ps-head" style="margin:0;">
+        <h3>Se necesita en ${p.cronoPeriodos[state.periodo].toLowerCase()}</h3>
+        <div class="ps-money">${fmt$(totalPeriodo)}</div>
+      </div>
+    </div>
+  `));
+
+  function conectarBuscador(){
+    const inp = wrap.querySelector("#searchCrono");
+    if(inp){ inp.addEventListener("input", (e)=>{ state.search = e.target.value; render(); const i2=document.getElementById("searchCrono"); i2.focus(); i2.selectionStart=i2.value.length; }); }
+  }
+
+  if(items.length === 0){
+    wrap.appendChild(el(`<div class="empty-hint">${state.search ? `Ningún insumo coincide con "${state.search}".` : "Sin datos para este periodo."}</div>`));
+    setTimeout(conectarBuscador);
+    return wrap;
+  }
+
+  const tableWrap = el(`<div class="table-wrap"></div>`);
+  const table = el(`
+    <table class="datos">
+      <thead><tr><th>Descripción</th><th>Unidad</th><th>Cantidad</th><th>P. Unit.</th><th>Total</th></tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><td>Total ${state.cronoTab.toLowerCase()}</td><td colspan="3"></td><td>${fmt$(totalPeriodo)}</td></tr></tfoot>
+    </table>
+  `);
+  const tbody = table.querySelector("tbody");
+  items.forEach(it=>{
+    const cant = it.cantPeriodo[state.periodo] || 0;
+    tbody.appendChild(el(`
+      <tr>
+        <td>${it.nm}</td>
+        <td class="unid">${it.unid}</td>
+        <td class="num">${fmtNum(cant)}</td>
+        <td class="num">${fmt$(it.precio)}</td>
+        <td class="num sub">${fmt$(cant*it.precio)}</td>
+      </tr>
+    `));
+  });
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+  setTimeout(conectarBuscador);
+  return wrap;
+}
+
+function renderValoradoTabla(){
+  const p = state.proj;
+  const n = p.cronoPeriodos.length;
+  const rubros = p.rubros.filter(r => coincideCompleta(r.desc, state.search) || coincideCompleta(r.cod, state.search));
+
+  const tableWrap = el(`<div class="table-wrap"></div>`);
+  const table = el(`<table class="crono"></table>`);
+  const thead = el(`<thead><tr></tr></thead>`);
+  const trh = thead.querySelector("tr");
+  trh.appendChild(el(`<th>Rubro</th>`));
+  trh.appendChild(el(`<th>Unidad</th>`));
+  trh.appendChild(el(`<th>Cantidad</th>`));
+  trh.appendChild(el(`<th>P. Unit.</th>`));
+  trh.appendChild(el(`<th>Total</th>`));
+  p.cronoPeriodos.forEach(per=> trh.appendChild(el(`<th>${per}</th>`)));
+  table.appendChild(thead);
+
+  const tbody = el(`<tbody></tbody>`);
+  const totalesPeriodo = new Array(n).fill(0);
+  let filaResaltada = null;
+  if(rubros.length === 0){
+    tbody.appendChild(el(`<tr><td colspan="${5+n}" style="text-align:center; color:var(--ink-dim);">Ningún rubro coincide con "${state.search}".</td></tr>`));
+  }
+  rubros.forEach(r=>{
+    const tr = el(`<tr></tr>`);
+    if(state.highlightItem && r.item === state.highlightItem){ tr.classList.add("row-hl"); filaResaltada = tr; }
+    tr.appendChild(el(`<td title="${r.desc}">${r.item}. ${r.desc}</td>`));
+    tr.appendChild(el(`<td class="pct">${r.unidad}</td>`));
+    tr.appendChild(el(`<td class="pct">${fmtNum(r.cant)}</td>`));
+    tr.appendChild(el(`<td class="pct">${fmt$(r.pu)}</td>`));
+    tr.appendChild(el(`<td class="pct">${fmt$(r.cant*r.pu)}</td>`));
+    const crono = r.crono || new Array(n).fill(0);
+    for(let i=0;i<n;i++){
+      const pct = crono[i]||0;
+      totalesPeriodo[i] += r.cant*r.pu*(pct/100);
+      tr.appendChild(el(`<td class="pct${pct===0?' z':''}">${pct===0?'—':pct+'%'}</td>`));
+    }
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  const tfoot = el(`<tfoot><tr></tr></tfoot>`);
+  const trf = tfoot.querySelector("tr");
+  trf.appendChild(el(`<td>Total del periodo</td><td colspan="4"></td>`));
+  totalesPeriodo.forEach(m => trf.appendChild(el(`<td>${fmt$(m)}</td>`)));
+  table.appendChild(tfoot);
+
+  tableWrap.appendChild(table);
+  if(filaResaltada){
+    setTimeout(()=> filaResaltada.scrollIntoView({block:"center", inline:"center", behavior:"smooth"}), 60);
+  }
+  return tableWrap;
+}
+
+function renderApu(){
+  const r = state.rubro;
+  const wrap = el(`<div></div>`);
+  const total = r.cant * r.pu;
+  wrap.appendChild(el(`
+    <div class="apu-head">
+      <div class="cod">${r.cod} &middot; ITEM ${r.item}</div>
+      <h2>${r.desc}</h2>
+      <div class="stats">
+        <div class="stat"><div class="k">Unidad</div><div class="v">${r.unidad}</div></div>
+        <div class="stat"><div class="k">Cantidad</div><div class="v">${fmtNum(r.cant)}</div></div>
+        <div class="stat"><div class="k">P. Unitario</div><div class="v">${fmt$(r.pu)}</div></div>
+        <div class="stat"><div class="k">P. Total</div><div class="v">${fmt$(total)}</div></div>
+      </div>
+    </div>
+  `));
+
+  if(!r.apu){
+    wrap.appendChild(el(`<div class="empty-hint">Este rubro de ejemplo no trae el desglose del análisis — probá con "Trazado y replanteo" para ver el APU completo.</div>`));
+    return wrap;
+  }
+
+  const colorGrupo = { "Materiales":"#D97C2B", "Mano de Obra":"#2B6E5C", "Equipo":"#5B6B63", "Transporte":"#6C7A89" };
+
+  r.apu.grupos.forEach(g=>{
+    const grp = el(`
+      <div class="grp">
+        <div class="grp-title">
+          <div class="dot" style="background:${colorGrupo[g.nombre] || '#888'}"></div>
+          <div class="grp-name">${g.nombre}</div>
+          <div class="grp-sub">${fmt$(g.subtotal)}</div>
+        </div>
+      </div>
+    `);
+    const tableWrap = el(`<div class="table-wrap"></div>`);
+    const table = el(`
+      <table class="datos">
+        <thead><tr><th>Descripción</th><th>Unidad</th><th>Cantidad</th><th>Precio</th><th>Rend.</th><th>Total</th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td>Subtotal ${g.nombre.toLowerCase()}</td><td colspan="4"></td><td>${fmt$(g.subtotal)}</td></tr></tfoot>
+      </table>
+    `);
+    const tbody = table.querySelector("tbody");
+    g.items.forEach(it=>{
+      const esPct = it.unid === "%";
+      tbody.appendChild(el(`
+        <tr>
+          <td>${it.nm}</td>
+          <td class="unid">${it.unid}</td>
+          <td class="num">${esPct ? it.cant.toFixed(1)+'%' : fmtNum(it.cant)}</td>
+          <td class="num">${esPct ? '—' : fmt$(it.precio)}</td>
+          <td class="num">${esPct ? '—' : fmtNum(it.rend||1)}</td>
+          <td class="num sub">${fmt$(it.subtotal)}</td>
+        </tr>
+      `));
+    });
+    tableWrap.appendChild(table);
+    grp.appendChild(tableWrap);
+    wrap.appendChild(grp);
+  });
+
+  wrap.appendChild(el(`
+    <div class="resumen">
+      <div class="ln"><div class="l">Costo directo</div><div class="r">${fmt$(r.apu.costoDirecto)}</div></div>
+      <div class="ln"><div class="l">Indirectos</div><div class="r">${fmt$(r.apu.costoIndirecto)}</div></div>
+      <div class="ln total"><div class="l">Precio unitario</div><div class="r">${fmt$(r.apu.precioOferta)}</div></div>
+    </div>
+  `));
+
+  return wrap;
+}
+
+cargarProyectosGuardados();
+render();
+
+// 💡 Registra el service worker (lo que permite instalarse como app y funcionar sin internet).
+// Si el navegador no lo soporta o algo falla, la app sigue funcionando igual, solo sin esa parte.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
