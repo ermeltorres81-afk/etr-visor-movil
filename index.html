@@ -1014,7 +1014,8 @@ render();
 
 // 💡 Registra el service worker (lo que permite instalarse como app y funcionar sin internet).
 // Si el navegador no lo soporta o algo falla, la app sigue funcionando igual, solo sin esa parte.
-if ("serviceWorker" in navigator) {
+// Dentro del APK propio (dominio appassets.androidplatform.net) NO se registra: ahí los archivos ya viajan dentro de la app.
+if ("serviceWorker" in navigator && location.hostname !== "appassets.androidplatform.net") {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   });
