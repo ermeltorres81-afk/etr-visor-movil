@@ -412,19 +412,77 @@ document.getElementById("btnBack").addEventListener("click", back);
 function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstElementChild; }
 
 // ==========================================================================
-// ACTIVACIÓN (candado de la app) — en la app real valida con el mismo
-// esquema que ya usa LicenciaETR.cs en el programa de escritorio. Acá, para
-// el prototipo, un único código de prueba y guardado en el propio celular
-// (localStorage) para no volver a pedirlo cada vez que se abre.
+// ACTIVACIÓN (candado de la app) — cada celular genera su propio "código de
+// equipo" (Device ID) al primer uso. Ese código se le manda al proveedor por
+// WhatsApp, y el proveedor devuelve una clave de activación firmada con su
+// llave privada (que nunca sale de su computadora — ver generador_licencias.html,
+// que NO se publica). El celular solo tiene la llave PÚBLICA de abajo, así que
+// puede comprobar que la clave es auténtica y le pertenece a ESTE equipo, pero
+// nadie puede fabricar claves nuevas leyendo este código fuente.
+//
+// Si algún cliente deja de pagar / hay que dar de baja un equipo, se agrega su
+// Device ID a LICENCIAS_REVOCADAS abajo y se vuelve a publicar la app.
 // ==========================================================================
-const CODIGO_DEMO = "ETR-2026-DEMO";
-function estaActivado(){ try { return localStorage.getItem("etr_activado") === "1"; } catch(e){ return false; } }
-function activar(clave){
-  if((clave||"").trim().toUpperCase() === CODIGO_DEMO){
-    try { localStorage.setItem("etr_activado", "1"); } catch(e){}
+const LICENCIA_PUBLIC_KEY_JWK = {"crv":"P-256","ext":true,"key_ops":["verify"],"kty":"EC","x":"2ghdFT3vqdE6w65s3tCn7tF37VdIEmQzMv0w9X-PTlw","y":"4s1rdcJ53I52qlSYOtoPw-NgYlmJB1JGqhLqjuDNEaY"};
+const LICENCIAS_REVOCADAS = []; // Device IDs dados de baja (ej: "AB12-CD34-EF56")
+
+function b64urlABytes(s){
+  s = s.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length % 4) s += '=';
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function obtenerDeviceId(){
+  try {
+    let id = localStorage.getItem("etr_device_id");
+    if(!id){
+      const b = crypto.getRandomValues(new Uint8Array(6));
+      const hex = Array.from(b).map(x=>x.toString(16).padStart(2,"0")).join("").toUpperCase();
+      id = hex.match(/.{1,4}/g).join("-");
+      localStorage.setItem("etr_device_id", id);
+    }
+    return id;
+  } catch(e){ return "SIN-ID-0000"; }
+}
+
+function estaActivado(){
+  try {
+    const lic = JSON.parse(localStorage.getItem("etr_licencia") || "null");
+    if(!lic) return false;
+    if(lic.d !== obtenerDeviceId()) return false;
+    if(LICENCIAS_REVOCADAS.includes(lic.d)) return false;
+    if(lic.x && new Date(lic.x) < new Date()) return false;
     return true;
+  } catch(e){ return false; }
+}
+
+async function activar(codigo){
+  try {
+    codigo = (codigo || "").trim();
+    const partes = codigo.split(".");
+    if(partes.length !== 2) return { ok:false, error:"Formato de código inválido." };
+    const [payloadB64, sigB64] = partes;
+    const payload = JSON.parse(new TextDecoder().decode(b64urlABytes(payloadB64)));
+
+    if(payload.d !== obtenerDeviceId()) return { ok:false, error:"Este código no es para este celular." };
+    if(LICENCIAS_REVOCADAS.includes(payload.d)) return { ok:false, error:"Este equipo fue dado de baja." };
+    if(payload.x && new Date(payload.x) < new Date()) return { ok:false, error:"Este código ya venció." };
+
+    const clavePublica = await crypto.subtle.importKey("jwk", LICENCIA_PUBLIC_KEY_JWK, {name:"ECDSA", namedCurve:"P-256"}, true, ["verify"]);
+    const firmaValida = await crypto.subtle.verify(
+      {name:"ECDSA", hash:"SHA-256"}, clavePublica,
+      b64urlABytes(sigB64), new TextEncoder().encode(payloadB64)
+    );
+    if(!firmaValida) return { ok:false, error:"Código inválido o adulterado." };
+
+    localStorage.setItem("etr_licencia", JSON.stringify(payload));
+    return { ok:true };
+  } catch(e){
+    return { ok:false, error:"No se pudo leer el código. Revisalo e intentá de nuevo." };
   }
-  return false;
 }
 
 // ==========================================================================
@@ -459,6 +517,7 @@ const PROYECTO_EJEMPLO_IMPORT = {
 };
 
 function renderActivacion(){
+  const deviceId = obtenerDeviceId();
   const wrap = el(`
     <div style="min-height:65vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:16px; text-align:center; padding:20px 10px;">
       <div style="width:64px;height:64px;"><img src="icon-192.png" alt="" style="width:100%;height:100%;object-fit:contain;"/></div>
@@ -466,21 +525,38 @@ function renderActivacion(){
         <h2 style="font-family:'Manrope'; margin:0 0 4px; font-size:18px;">Activar ETR Visor</h2>
         <div style="color:var(--ink-dim); font-size:13px; max-width:270px;">Ingresá el código de activación que te dio tu proveedor de ETR APUS PRO.</div>
       </div>
+
+      <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:12px 16px; width:100%; max-width:280px;">
+        <div style="font-size:11px; color:var(--ink-dim); margin-bottom:4px;">Código de este celular (mandalo a tu proveedor):</div>
+        <div style="font-family:'IBM Plex Mono'; font-weight:600; font-size:15px; letter-spacing:.03em;">${deviceId}</div>
+        <button id="btnCopiarId" style="margin-top:8px; background:none; border:1px solid var(--line); color:var(--ink); padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer;">Copiar código</button>
+      </div>
+
       <div class="search" style="width:100%; max-width:260px; margin:0;">
-        <input id="inpClave" placeholder="Código de activación" style="text-align:center; font-family:'IBM Plex Mono'; letter-spacing:.05em;"/>
+        <textarea id="inpClave" placeholder="Pegá acá la clave de activación" rows="3" style="width:100%; text-align:center; font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:.02em; resize:none; border:1px solid var(--line); border-radius:10px; padding:10px; background:var(--surface); color:var(--ink);"></textarea>
       </div>
       <div id="errClave" style="color:var(--danger); font-size:12px; min-height:14px;"></div>
       <button id="btnActivar" style="background:var(--brand); color:var(--brand-ink); border:none; padding:12px 30px; border-radius:12px; font-family:'Manrope'; font-weight:700; font-size:14px; cursor:pointer;">Activar</button>
-      <div style="font-size:10.5px; color:var(--ink-dim); max-width:250px;">Prototipo: probá con el código <b style="font-family:'IBM Plex Mono'">${CODIGO_DEMO}</b></div>
     </div>
   `);
-  const intentar = ()=>{
+  wrap.querySelector("#btnCopiarId").addEventListener("click", async ()=>{
+    try {
+      await navigator.clipboard.writeText(deviceId);
+      const b = wrap.querySelector("#btnCopiarId");
+      const t = b.textContent; b.textContent = "¡Copiado!";
+      setTimeout(()=> b.textContent = t, 1500);
+    } catch(e){}
+  });
+  const intentar = async ()=>{
     const v = wrap.querySelector("#inpClave").value;
-    if(activar(v)) render();
-    else wrap.querySelector("#errClave").textContent = "Código inválido. Revisalo e intentá de nuevo.";
+    const btn = wrap.querySelector("#btnActivar");
+    btn.disabled = true; btn.textContent = "Verificando…";
+    const res = await activar(v);
+    btn.disabled = false; btn.textContent = "Activar";
+    if(res.ok) render();
+    else wrap.querySelector("#errClave").textContent = res.error || "Código inválido. Revisalo e intentá de nuevo.";
   };
   wrap.querySelector("#btnActivar").addEventListener("click", intentar);
-  wrap.querySelector("#inpClave").addEventListener("keydown", (e)=>{ if(e.key==="Enter") intentar(); });
   setTimeout(()=> wrap.querySelector("#inpClave").focus());
   return wrap;
 }
