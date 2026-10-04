@@ -1,4 +1,4 @@
-const CACHE = "etr-visor-v5";
+const CACHE = "etr-visor-v6";
 const ARCHIVOS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {
