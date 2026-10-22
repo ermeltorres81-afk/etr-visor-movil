@@ -1,6 +1,6 @@
 # Pendientes e ideas para el Visor ETR
 
-Lista corta para decidir más adelante. **Nada de esto está implementado.**
+Lista corta para decidir más adelante. **Las ideas de producto siguen pendientes; las pruebas tienen su estado separado abajo.**
 
 ## Datos nuevos de la V3 que convendría mostrar
 - **Presupuesto con totales completos**: subtotal, indirectos, utilidad, IVA y total del presupuesto (hoy solo se ve el total referencial).
@@ -24,6 +24,9 @@ Lista corta para decidir más adelante. **Nada de esto está implementado.**
 - Quitar del producto final el aviso "Prototipo · datos de ejemplo", los proyectos de ejemplo y el botón de proyecto de ejemplo cuando se publique la versión definitiva.
 - Las tipografías vienen de Google Fonts: sin internet se usa una letra del sistema. Si se quiere el mismo aspecto sin conexión, guardar las fuentes dentro de la app.
 
-## Pruebas pendientes
+## Pruebas
+- Pruebas automáticas del importador y alcance: ver [PRUEBAS_IMPORTADOR.md](PRUEBAS_IMPORTADOR.md).
+
+### Pendientes manuales (sin evidencia de ejecución en esta revisión)
 - Probar en un celular Android real (varias marcas y tamaños de pantalla) y con archivos reales exportados por la V3, en especial proyectos grandes (cientos de rubros).
 - Probar el botón "atrás" del celular dentro del APK.
