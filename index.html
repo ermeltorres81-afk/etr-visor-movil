@@ -802,11 +802,13 @@ function renderProjects(){
     const file = e.target.files && e.target.files[0];
     if(!file) return;
     if(file.size === 0){ avisar("El archivo está vacío. Vuelve a exportarlo desde ETR APUS PRO.", false); return; }
-    if(file.size > TAM_MAX){ avisar("El archivo es demasiado grande para abrirlo en el celular.", false); return; }
+    if(file.size > TAM_MAX){ avisar("El archivo es demasiado grande para abrirlo en el celular. El límite es 8 MB (8.388.608 bytes).", false); return; }
     const reader = new FileReader();
     reader.onload = ()=>{
       let crudo;
-      try { crudo = JSON.parse(String(reader.result).replace(/^\uFEFF/, "").trim() || "null"); }
+      const contenido = String(reader.result).replace(/^\uFEFF/, "").trim();
+      if(!contenido){ avisar("El archivo está vacío. Vuelve a exportarlo desde ETR APUS PRO.", false); return; }
+      try { crudo = JSON.parse(contenido); }
       catch(err){ avisar("No se pudo leer ese archivo: está dañado o no es el que genera ETR APUS PRO. Vuelve a exportarlo.", false); return; }
       try { agregarProyecto(crudo); }
       catch(err){ avisar("No se pudo agregar ese proyecto. El archivo parece estar incompleto.", false); }
